@@ -2,6 +2,24 @@
 
 给孩子用的学习积分 + 神兽养成工作台。单文件应用，手机和电脑都能用，数据可自动同步。
 
+## 线上地址
+
+- 应用：**https://runningthomas.github.io/learning-points-workstation/**
+- 仓库：https://github.com/Runningthomas/learning-points-workstation
+
+手机浏览器打开上面的应用地址 → 菜单/分享 → **添加到主屏幕**，即可全屏使用、断网也能打开。
+
+### 关于更新
+
+这台机器的网络访问 `github.com` 不稳定（`git push` 会被重置），所以本项目的发布方式是
+用 GitHub API 上传文件（`api.github.com` 可正常访问）。如果要在本机用 git 推送：
+
+```bash
+git fetch origin            # 需要能访问 github.com
+git reset --hard origin/main   # 与远端对齐（文件内容一致，不会丢东西）
+git add -A && git commit -m "..." && git push
+```
+
 ## 快速开始
 
 直接用浏览器打开 `index.html` 即可使用，所有数据自动保存在本机浏览器里。

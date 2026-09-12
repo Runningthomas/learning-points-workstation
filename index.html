@@ -11,6 +11,37 @@
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon.svg">
+<script>
+/* 启动错误提示：手机上如果脚本没跑起来，直接在页面上显示原因，方便排查 */
+window.__lpwErrors = [];
+window.__lpwBooted = false;
+function lpwShowBootError(extra){
+  try{
+    var el = document.getElementById('bootError');
+    var msg = document.getElementById('bootErrorMsg');
+    if(!el || !msg) return;
+    var list = window.__lpwErrors.slice(0, 4);
+    if(extra) list.push(extra);
+    msg.textContent = list.length ? list.join(' ｜ ') : '未知原因';
+    el.style.display = 'block';
+  }catch(e){}
+}
+window.onerror = function(m, src, line){
+  window.__lpwErrors.push(String(m) + '（第' + line + '行）');
+  lpwShowBootError('应用启动失败');
+  return false;
+};
+window.addEventListener('unhandledrejection', function(e){
+  var r = e && e.reason;
+  window.__lpwErrors.push('Promise: ' + (r && r.message ? r.message : String(r)));
+  lpwShowBootError('应用启动失败');
+});
+document.addEventListener('DOMContentLoaded', function(){
+  setTimeout(function(){
+    if(!window.__lpwBooted) lpwShowBootError('脚本未执行完成');
+  }, 2500);
+});
+</script>
 <style>
 :root{
   --bg:#0b0e17; --bg-2:#121a30;
@@ -36,7 +67,16 @@ button{font-family:inherit}
 h2{margin:0}
 
 /* 背景光斑 */
-.orbs{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.boot-error{
+  position:relative;z-index:999;margin:10px 14px 0;padding:14px 16px;border-radius:14px;
+  background:linear-gradient(160deg,#4a1420,#3a1018);border:1px solid rgba(255,107,122,.5);
+  color:#FFD9DE;font-size:13px;line-height:1.6;
+}
+.boot-error b{display:block;font-size:14.5px;margin-bottom:4px;color:#fff}
+.be-msg{font-family:ui-monospace,Consolas,monospace;font-size:11.5px;word-break:break-all;color:#FFB3BB;margin:4px 0}
+.be-hint{font-size:11.5px;color:#E7BFC6;margin-top:6px}
+.be-btn{margin-top:10px;padding:8px 16px;border:none;border-radius:10px;background:#FF6B7A;color:#fff;font-size:13px;font-weight:700}
+.orbs{position:fixed;top:0;left:0;right:0;bottom:0;z-index:0;pointer-events:none;overflow:hidden}
 .orb{position:absolute;border-radius:50%;filter:blur(70px);opacity:.5}
 .o1{width:46vw;height:46vw;top:-14vw;left:-10vw;background:radial-gradient(circle,rgba(245,181,68,.30),transparent 70%)}
 .o2{width:52vw;height:52vw;top:8vh;right:-18vw;background:radial-gradient(circle,rgba(169,139,255,.26),transparent 70%)}
@@ -130,7 +170,7 @@ h2{margin:0}
 .ring-bg{stroke:rgba(255,255,255,.09)}
 .ring-fg{stroke:url(#none);stroke:var(--gold);stroke-dasharray:125.6;stroke-dashoffset:125.6;transition:stroke-dashoffset .6s ease,stroke .3s}
 .ring.done .ring-fg{stroke:var(--green)}
-.ring-txt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring-txt{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
 .ring-txt b{font-size:16px;font-weight:800;font-variant-numeric:tabular-nums}
 .ring-txt span{font-size:9px;color:var(--faint)}
 .hero-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
@@ -240,7 +280,7 @@ h2{margin:0}
 @keyframes blink{0%,92%,100%{transform:scaleY(0)}95%{transform:scaleY(1)}97%{transform:scaleY(0)}}
 .crown{position:absolute;top:2px;left:50%;transform:translateX(-50%);font-size:26px;animation:floaty 2.6s ease-in-out infinite;pointer-events:none}
 @keyframes floaty{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-5px)}}
-.stars{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.stars{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;overflow:hidden}
 .spark{position:absolute;font-size:16px;animation:fly 1s ease-out forwards}
 @keyframes fly{0%{opacity:1;transform:translate(0,0) scale(.4)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(1.25)}}
 .ph-meta{position:relative;padding:0 16px}
@@ -355,7 +395,7 @@ h2{margin:0}
 
 /* ===== 模态框 ===== */
 .modal-overlay{
-  display:none;position:fixed;inset:0;z-index:100;background:rgba(4,6,12,.62);
+  display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:100;background:rgba(4,6,12,.62);
   backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:16px;
 }
 .modal-overlay.show{display:flex}
@@ -415,7 +455,7 @@ h2{margin:0}
 
 /* ===== 庆祝 ===== */
 .celebrate-overlay{
-  display:none;position:fixed;inset:0;z-index:200;align-items:center;justify-content:center;
+  display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:200;align-items:center;justify-content:center;
   background:rgba(6,8,16,.62);backdrop-filter:blur(3px);
 }
 .celebrate-overlay.show{display:flex}
@@ -505,6 +545,18 @@ h2{margin:0}
 </style>
 </head>
 <body>
+<div id="bootError" class="boot-error" style="display:none">
+  <b>⚠️ 应用没能正常启动</b>
+  <div class="be-msg" id="bootErrorMsg"></div>
+  <div class="be-hint">可以试试点下面的按钮重新加载；如果还是这样，请用手机自带浏览器（Safari / Chrome / Edge）打开本页，不要用微信、QQ、UC 等内置浏览器。把上面这行提示截图发给开发者即可定位。</div>
+  <button class="be-btn" onclick="location.reload(true)">重新加载</button>
+</div>
+<noscript>
+  <div class="boot-error">
+    <b>⚠️ 浏览器禁用了 JavaScript</b>
+    <div class="be-hint">这个应用需要 JavaScript 才能运行。请在浏览器设置里开启 JavaScript；如果在微信里打开，请点右上角「···」→「在浏览器打开」。</div>
+  </div>
+</noscript>
 <div class="orbs" aria-hidden="true"><span class="orb o1"></span><span class="orb o2"></span><span class="orb o3"></span></div>
 
 <div class="app">
@@ -754,7 +806,7 @@ h2{margin:0}
 /* ---------- 常量 ---------- */
 const STORAGE_KEY = 'learningPointsWorkstation';   // 与旧版保持一致，老数据可直接升级
 const SYNC_KEY    = 'lpw_syncConfig';
-const APP_VERSION = '2.0';
+const APP_VERSION = '2.1';
 
 const DEFAULT_RULES = [
   {id:'r1', name:'今天不扯皮', points:10, type:'add'},
@@ -1276,13 +1328,33 @@ function beastVisual(type, stageCls, colors){
 /* ============================================================
    数据层
    ============================================================ */
-let data = loadData();
+/* 安全存储：无痕模式、隐私设置、部分内置浏览器会禁用 localStorage 并抛异常，
+   这里统一兜底到内存存储，保证页面依然能用（只是关掉页面后数据不保留）。 */
+const memStore = {};
+let storageOK = true;
+const store = {
+  get(k){
+    try{ return window.localStorage.getItem(k); }
+    catch(e){ storageOK = false; return Object.prototype.hasOwnProperty.call(memStore,k) ? memStore[k] : null; }
+  },
+  set(k,v){
+    try{ window.localStorage.setItem(k, String(v)); }
+    catch(e){ storageOK = false; memStore[k] = String(v); }
+  },
+  del(k){
+    try{ window.localStorage.removeItem(k); }
+    catch(e){ delete memStore[k]; }
+  }
+};
+
 const DEVICE_KEY = 'lpw_deviceId';
 const deviceId = (function(){
-  let d = localStorage.getItem(DEVICE_KEY);
-  if(!d){ d = 'dev_'+Math.random().toString(36).slice(2,10); localStorage.setItem(DEVICE_KEY,d); }
+  let d = store.get(DEVICE_KEY);
+  if(!d){ d = 'dev_'+Math.random().toString(36).slice(2,10); store.set(DEVICE_KEY,d); }
   return d;
 })();
+
+let data = loadData();     // 必须在 deviceId 之后：initData() 会用到它
 
 function initData(){
   return {
@@ -1326,7 +1398,7 @@ function migrate(d){
 
 function loadData(){
   try{
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = store.get(STORAGE_KEY);
     if(raw) return migrate(JSON.parse(raw));
   }catch(e){ console.warn('读取本地数据失败', e); }
   return initData();          // 首次使用：带默认规则
@@ -1334,8 +1406,8 @@ function loadData(){
 
 function saveData(){
   markSync();                 // 任何本地改动都打上时间戳，避免被云端旧数据覆盖
-  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
-  catch(e){ showToast('本地保存失败：存储空间可能已满','error'); }
+  store.set(STORAGE_KEY, JSON.stringify(data));
+  if(!storageOK) warnStorageOnce();
   scheduleSync();
 }
 
@@ -1676,10 +1748,18 @@ function doSettle(){
 function checkGoalReached(){
   const goal = Math.max(1, data.settings.dailyGoal||10);
   const flag = 'lpw_goal_'+todayStr();
-  if(getTodayScore()>=goal && !localStorage.getItem(flag)){
-    localStorage.setItem(flag,'1');
+  if(getTodayScore()>=goal && !store.get(flag)){
+    store.set(flag,'1');
     setTimeout(()=>showCelebrate('🎯','今日目标达成！','离下一个小目标又近了一步'), 500);
   }
+}
+let _storageWarned = false;
+function warnStorageOnce(){
+  if(_storageWarned) return;
+  _storageWarned = true;
+  showToast('这台浏览器禁用了本地存储，数据只在本次打开期间保留','error',{label:'了解',fn:()=>{
+    alert('浏览器禁用了本地存储（常见于无痕模式或隐私设置）。\n\n影响：关掉页面后积分数据不会保留。\n\n解决办法：\n1. 换用 Safari / Chrome / Edge 打开\n2. 关闭无痕模式\n3. 关闭「阻止所有 Cookie / 网站数据」类设置');
+  }});
 }
 /* ============================================================
    神兽页
@@ -2194,16 +2274,16 @@ function resetAll(){
 let syncTimer = null, syncPollTimer = null, syncBusy = false;
 
 function getSyncConfig(){
-  try{ return JSON.parse(localStorage.getItem(SYNC_KEY)) || null; }catch(e){ return null; }
+  try{ return JSON.parse(store.get(SYNC_KEY)) || null; }catch(e){ return null; }
 }
-function saveSyncConfig(cfg){ localStorage.setItem(SYNC_KEY, JSON.stringify(cfg)); }
+function saveSyncConfig(cfg){ store.set(SYNC_KEY, JSON.stringify(cfg)); }
 function syncReady(){
   const c = getSyncConfig();
   return !!(c && c.token && c.gistId);
 }
 function markSync(){ data._lastSyncTs = Date.now(); data._deviceId = deviceId; }
 function saveLocalOnly(){
-  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }catch(e){}
+  store.set(STORAGE_KEY, JSON.stringify(data));
 }
 function scheduleSync(){
   if(!syncReady()) return;
@@ -2479,26 +2559,32 @@ function refreshAll(){
 }
 
 (function init(){
-  refreshAll();
-  updateSyncBtn();
-  if(location.hash.indexOf('pet')>=0) switchTab('pet');
-  if(syncReady()){
-    startPolling();
-    syncNow._quiet = true;
-    syncNow();
-  }
-  document.addEventListener('visibilitychange', ()=>{
-    if(!document.hidden && syncReady()){ syncNow._quiet = true; syncNow(); }
-  });
-  window.addEventListener('online', ()=>{ if(syncReady()){ syncNow._quiet = true; syncNow(); } });
-  window.addEventListener('focus', ()=>{ if(syncReady()){ syncNow._quiet = true; syncNow(); } });
-  document.addEventListener('keydown', e=>{
-    if((e.ctrlKey||e.metaKey) && e.key==='z' && !/INPUT|TEXTAREA|SELECT/.test((e.target.tagName||''))){
-      e.preventDefault(); undoLast();
+  try{
+    refreshAll();
+    updateSyncBtn();
+    if(location.hash.indexOf('pet')>=0) switchTab('pet');
+    if(syncReady()){
+      startPolling();
+      syncNow._quiet = true;
+      syncNow();
     }
-  });
-  if('serviceWorker' in navigator && location.protocol.indexOf('http')===0){
-    navigator.serviceWorker.register('sw.js').catch(()=>{});
+    document.addEventListener('visibilitychange', ()=>{
+      if(!document.hidden && syncReady()){ syncNow._quiet = true; syncNow(); }
+    });
+    window.addEventListener('online', ()=>{ if(syncReady()){ syncNow._quiet = true; syncNow(); } });
+    window.addEventListener('focus', ()=>{ if(syncReady()){ syncNow._quiet = true; syncNow(); } });
+    document.addEventListener('keydown', e=>{
+      if((e.ctrlKey||e.metaKey) && e.key==='z' && !/INPUT|TEXTAREA|SELECT/.test((e.target.tagName||''))){
+        e.preventDefault(); undoLast();
+      }
+    });
+    if('serviceWorker' in navigator && location.protocol.indexOf('http')===0){
+      navigator.serviceWorker.register('sw.js?v=3').catch(()=>{});
+    }
+    window.__lpwBooted = true;
+  }catch(err){
+    window.__lpwErrors.push(err && err.message ? err.message : String(err));
+    if(typeof lpwShowBootError === 'function') lpwShowBootError('初始化异常');
   }
 })();
 </script>

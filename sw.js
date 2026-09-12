@@ -1,13 +1,18 @@
 /* 离线缓存：网络优先，失败时用缓存，保证手机断网也能打开 */
-const CACHE = 'lpw-v2';
+const CACHE = 'lpw-v3';
 const CORE = ['./', './index.html', './manifest.json', './icon.svg'];
 
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE)
-      .then(c => Promise.allSettled(CORE.map(u => c.add(u))))
+      .then(c => Promise.all(CORE.map(u => c.add(u).catch(() => null))))
       .then(() => self.skipWaiting())
   );
+});
+
+/* 让页面始终拿到最新版本：收到 SKIP_WAITING 立即接管 */
+self.addEventListener('message', e => {
+  if (e.data === 'skipWaiting') self.skipWaiting();
 });
 
 self.addEventListener('activate', e => {

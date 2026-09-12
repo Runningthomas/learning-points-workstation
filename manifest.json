@@ -1,0 +1,20 @@
+{
+  "name": "学习积分工作台",
+  "short_name": "学习积分",
+  "description": "记录每日积分、养成神兽、手机与电脑自动同步",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b0e17",
+  "theme_color": "#0b0e17",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
